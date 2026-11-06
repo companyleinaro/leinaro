@@ -3496,13 +3496,13 @@ html:not(.js) .project-flip__back { display: flex; transform: none; }
   .project-flip__back dl > div { grid-template-columns: 4rem minmax(0,1fr); gap: 0.75rem; }
 }
 
-/* === 17. LEISTUNGSBEZEICHNUNGEN, KONTAKTLINKS & RECHTLICHE PRÜFMARKIERUNGEN === */
-.legal-review-note { margin: 1.5rem 0; padding: 1.1rem 1.25rem; border-left: 4px solid #93651b; background: #fff4dc; color: #45300e; font-size: 0.95rem; line-height: 1.65; }
-.legal-review-note > strong { display: block; margin-bottom: 0.5rem; }
-.legal .legal-review-note p { margin: 0; color: #45300e; }
+/* === 17. LEISTUNGSBEZEICHNUNGEN & KONTAKTLINKS === */
 .legal ul { padding-left: 1.4rem; }
 .legal li + li { margin-top: 0.5rem; }
 .legal code { overflow-wrap: anywhere; }
+.legal a[href^='mailto:'], .legal a[href^='tel:'] { color: var(--pink); font-weight: 600; transition: color 0.2s ease; }
+.legal a[href^='mailto:']:hover, .legal a[href^='tel:']:hover,
+.legal a[href^='mailto:']:focus-visible, .legal a[href^='tel:']:focus-visible { color: #b91b4c; }
 .page--contact a[href^='mailto:'], .page--contact a[href^='tel:'] { transition: color 0.2s ease, background-color 0.2s ease; }
 .page--contact a[href^='mailto:']:hover, .page--contact a[href^='tel:']:hover,
 .page--contact a[href^='mailto:']:focus-visible, .page--contact a[href^='tel:']:focus-visible { color: #b91b4c; text-decoration: underline; text-underline-offset: 0.2em; }
