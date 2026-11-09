@@ -229,58 +229,59 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   });
 
-  let consent = document.querySelector('.cookie-banner');
-  if (!consent) {
-    consent = document.createElement('dialog');
-    consent.className = 'cookie-banner';
-    consent.hidden = true;
-    consent.setAttribute('aria-labelledby', 'cookie-note-title');
-    consent.setAttribute('aria-describedby', 'cookie-note-description');
-    consent.innerHTML =
-      '<div class="cookie-banner__content"><span class="cookie-banner__eyebrow">Ihre Privatsphäre</span><h2 id="cookie-note-title" tabindex="-1" autofocus>Ein kurzer<br /><em>Datenschutzhinweis.</em></h2><p id="cookie-note-description">Diese Website verwendet keine Analyse- oder Marketing-Cookies. Es wird lediglich lokal in Ihrem Browser gespeichert, dass Sie diesen Hinweis geschlossen haben.</p><div class="cookie-banner__actions"><button class="button button--primary" type="button" data-cookie-choice>Verstanden <span aria-hidden="true"><svg class="ui-icon ui-icon--arrow-right" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M4 12h16m-6-6 6 6-6 6" /></svg></span></button><a href="datenschutz.html">Datenschutz lesen</a></div></div>';
-    document.body.append(consent);
-  }
-  const safelyGetConsent = () => {
-    try {
-      return window.localStorage.getItem('leitwerk-cookie-note');
-    } catch {
-      return null;
-    }
-  };
-  const dismissConsent = () => {
-    if (!consent) return;
+  // Remember acknowledgement across all pages until the visitor resets it.
+  const privacyKey = 'leinaro-privacy-notice-v2';
+  let privacyPreference = null;
+  try {
+    // Remove the former preference, which had no expiry or separate storage choice.
+    window.localStorage.removeItem('leitwerk-cookie-note');
+    privacyPreference = window.localStorage.getItem(privacyKey) === 'acknowledged';
+  } catch { /* The notice remains usable when browser storage is unavailable. */ }
+  const consent = document.querySelector('.cookie-banner') || document.createElement('dialog');
+  consent.className = 'cookie-banner';
+  consent.hidden = true;
+  consent.setAttribute('aria-labelledby', 'cookie-note-title');
+  consent.setAttribute('aria-describedby', 'cookie-note-description');
+  consent.innerHTML = '<div class="cookie-banner__content"><span class="cookie-banner__eyebrow">Ihre Privatsphäre</span><h2 id="cookie-note-title" tabindex="-1" autofocus>Datenschutz.<br /><em>Kurz erklärt.</em></h2><p id="cookie-note-description">Diese Website nutzt keine Analyse- oder Marketing-Cookies. Formulardaten werden erst beim Absenden an Web3Forms übermittelt.</p><p class="cookie-banner__storage-info">Mit „Verstanden“ speichern wir ausschließlich, dass Sie diesen Hinweis bestätigt haben. Er bleibt dann auf allen Unterseiten ausgeblendet, bis Sie die Auswahl zurücksetzen oder Ihre Browserdaten löschen.</p><p class="cookie-banner__status" role="status" hidden></p><div class="cookie-banner__actions"><button class="button" type="button" data-privacy-accept>Verstanden</button><button class="cookie-banner__withdraw" type="button" data-privacy-withdraw hidden>Gespeicherte Auswahl löschen</button><a href="datenschutz.html">Datenschutz lesen</a></div></div>';
+  document.body.append(consent);
+  const status = consent.querySelector('.cookie-banner__status');
+  const withdraw = consent.querySelector('[data-privacy-withdraw]');
+  const closeNotice = () => {
     if (consent.open) consent.close();
-    consent.classList.add('is-dismissed');
     consent.hidden = true;
-    consent.setAttribute('aria-hidden', 'true');
     document.body.classList.remove('cookie-note-open');
   };
-  const showConsent = () => {
-    if (!consent) return;
-    consent.classList.remove('is-dismissed');
+  const showNotice = () => {
+    status.hidden = true;
+    withdraw.hidden = !privacyPreference;
     consent.hidden = false;
-    consent.setAttribute('aria-hidden', 'false');
     document.body.classList.add('cookie-note-open');
     if (!consent.open) consent.showModal();
   };
-  consent?.addEventListener('cancel', (event) => {
-    event.preventDefault();
-    dismissConsent();
+  consent.querySelector('[data-privacy-accept]').addEventListener('click', () => {
+    try {
+      window.localStorage.setItem(privacyKey, 'acknowledged');
+      window.localStorage.removeItem('leinaro-privacy-notice-v1');
+      privacyPreference = true;
+    } catch { /* Closing remains possible if the browser blocks storage. */ }
+    closeNotice();
   });
-  if (consent) {
-    // Legal information must remain directly readable from the dialog's link.
-    if (['datenschutz.html', 'impressum.html'].includes(pageName) || safelyGetConsent())
-      dismissConsent();
-    else showConsent();
-  }
-  consent?.querySelectorAll('[data-cookie-choice]').forEach((button) => {
-    button.addEventListener('click', () => {
-      try {
-        window.localStorage.setItem('leitwerk-cookie-note', 'acknowledged');
-      } catch {
-        /* Banner can still close if storage is unavailable. */
-      }
-      dismissConsent();
-    });
+  withdraw.addEventListener('click', () => {
+    try { window.localStorage.removeItem(privacyKey); }
+    catch { status.textContent = 'Bitte löschen Sie die Website-Daten in Ihren Browser-Einstellungen.'; status.hidden = false; return; }
+    privacyPreference = null;
+    withdraw.hidden = true;
+    status.textContent = 'Ihre gespeicherte Auswahl wurde gelöscht.';
+    status.hidden = false;
+    closeNotice();
   });
+  consent.addEventListener('cancel', (event) => { event.preventDefault(); closeNotice(); });
+  const settings = document.createElement('button');
+  settings.type = 'button';
+  settings.className = 'privacy-settings';
+  settings.textContent = 'Datenschutz-Einstellungen';
+  settings.setAttribute('aria-haspopup', 'dialog');
+  settings.addEventListener('click', showNotice);
+  document.querySelector('.footer-bottom > div')?.append(settings);
+  if (!['datenschutz.html', 'impressum.html'].includes(pageName) && !privacyPreference) showNotice();
 });

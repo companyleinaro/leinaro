@@ -97,3 +97,7 @@ werden erst nach Deployment und korrekter Domain-Anbindung wirksam; sie ändern 
 ## Veröffentlichung
 
 Die Dateien in ein Git-Repository legen, auf GitHub pushen und das Repository in Vercel importieren. Bei einem Push auf `main` kann Vercel automatisch neu deployen.
+
+## Datenschutzhinweis – 9. November 2026
+
+„Verstanden“ speichert die Bestätigung browserlokal ohne Ablaufdatum. Der Hinweis bleibt auf allen Unterseiten und bei Wiederbesuchen geschlossen. Rücksetzen über „Datenschutz-Einstellungen“ im Footer. Escape schließt ohne Speicherung. Test: `node tools/test-cookie-note.cjs [Pfad-zu-playwright]`.
